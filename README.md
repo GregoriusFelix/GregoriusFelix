@@ -105,6 +105,16 @@ A multi-page café and restaurant website with menu, ordering, gallery, loyalty,
 
 `HTML` `CSS`
 
+## Contributions, Tetris style
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/GregoriusFelix/GregoriusFelix/output/tetris-contribution-graph-dark.svg" />
+  <source media="(prefers-color-scheme: light)" srcset="https://raw.githubusercontent.com/GregoriusFelix/GregoriusFelix/output/tetris-contribution-graph.svg" />
+  <img alt="Tetris animation of Gregorius Felix's GitHub contributions over the past year" src="https://raw.githubusercontent.com/GregoriusFelix/GregoriusFelix/output/tetris-contribution-graph.svg" width="100%" />
+</picture>
+
+[Animation by abozanona](https://github.com/abozanona/pacman-contribution-graph)
+
 ## More from my résumé
 
 - **Peatland Fire Alert System, IBM Z Datathon 2026:** Built the frontend dashboard and an interactive GeoJSON map with risk markers, zooming, dragging, and selection using vanilla JavaScript, HTML, CSS, and SVG.
