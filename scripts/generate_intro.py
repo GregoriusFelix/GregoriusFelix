@@ -10,22 +10,24 @@ ROOT = Path(__file__).resolve().parents[1]
 PHRASES = ["Hello, my name is Felix", "Software Engineering Student", "I build web & mobile apps."]
 
 
-def headline(font, phrase):
+def headline(font, phrase, font_size=64, letter_spacing=0):
     glyphs = font.getGlyphSet()
     cmap = font.getBestCmap()
     pen = SVGPathPen(glyphs)
     advance = 0
     positions = [0]
-    for char in phrase:
+    for index, char in enumerate(phrase):
         glyph_name = cmap[ord(char)]
         glyphs[glyph_name].draw(TransformPen(pen, (1, 0, 0, 1, advance, 0)))
         advance += font['hmtx'][glyph_name][0]
+        if index < len(phrase) - 1:
+            advance += letter_spacing * font['head'].unitsPerEm / font_size
         positions.append(advance)
-    scale = min(64 / font['head'].unitsPerEm, 1040 / advance)
+    scale = min(font_size / font['head'].unitsPerEm, 1040 / advance)
     return pen.getCommands(), advance * scale, scale, [x * scale for x in positions]
 
 
-def banner(font):
+def banner(font, support_font):
     bg, fg, muted, accent = "#020617", "#ffffff", "#dbeafe", "#bfdbfe"
     background = base64.b64encode((ROOT / 'assets' / 'intro-background.jpg').read_bytes()).decode('ascii')
     text = []
@@ -44,6 +46,8 @@ def banner(font):
 <g clip-path="url(#type-{i})"><path d="{outline}" transform="translate({left} 220) scale({scale} {-scale})" fill="{fg}"/></g>
 <rect x="{left + 7}" y="155" width="3" height="72" fill="{accent}"><animate attributeName="x" values="{cursor_values}" keyTimes="{keys}" calcMode="discrete" {timing}/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.48;.5;1" dur=".9s" repeatCount="indefinite"/></rect></g>""")
     static_outline, static_width, static_scale, _ = headline(font, PHRASES[0])
+    name_outline, name_width, name_scale, _ = headline(support_font, 'GREGORIUS FELIX CATON ERAWAN', font_size=22, letter_spacing=2)
+    subtitle_outline, subtitle_width, subtitle_scale, _ = headline(support_font, 'Software Engineering \u00b7 Web & Mobile Development', font_size=24)
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title description">
 <title id="title">Hello, my name is Felix. Software Engineering Student.</title>
 <desc id="description">An animated typing introduction for Gregorius Felix Caton Erawan, over a blue and black grid background.</desc>
@@ -51,17 +55,18 @@ def banner(font):
 <rect width="1200" height="400" fill="{bg}"/>
 <image href="data:image/jpeg;base64,{background}" x="0" y="0" width="1200" height="400" preserveAspectRatio="xMidYMid slice"/>
 <rect width="1200" height="400" fill="{bg}" opacity=".22"/>
-<text x="600" y="132" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="14" letter-spacing="3" fill="{accent}">GREGORIUS FELIX CATON ERAWAN</text>
+<path aria-label="Gregorius Felix Caton Erawan" d="{name_outline}" transform="translate({(1200 - name_width) / 2} 132) scale({name_scale} {-name_scale})" fill="{accent}"/>
 {''.join(text)}
 <path class="static-text" d="{static_outline}" transform="translate({(1200 - static_width) / 2} 220) scale({static_scale} {-static_scale})" fill="{fg}"/>
-<text x="600" y="276" text-anchor="middle" font-family="Arial,Helvetica,sans-serif" font-size="17" fill="{muted}">Software Engineering &#183; Web &amp; Mobile Development</text>
+<path aria-label="Software Engineering and Web and Mobile Development" d="{subtitle_outline}" transform="translate({(1200 - subtitle_width) / 2} 276) scale({subtitle_scale} {-subtitle_scale})" fill="{muted}"/>
 </svg>
 """
 
 
 if __name__ == '__main__':
     font = TTFont(ROOT / 'assets' / 'fonts' / 'born2bsporty-fs.otf')
+    support_font = TTFont(ROOT / 'assets' / 'fonts' / 'impact.ttf')
     for dark in [False, True]:
         destination = ROOT / 'assets' / ('intro-dark.svg' if dark else 'intro.svg')
-        destination.write_text(banner(font), encoding='utf-8', newline='\n')
+        destination.write_text(banner(font, support_font), encoding='utf-8', newline='\n')
         print(f'Generated {destination.relative_to(ROOT)}')
