@@ -60,7 +60,7 @@ def banner(font):
 
 
 if __name__ == '__main__':
-    font = TTFont(ROOT / 'assets' / 'fonts' / 'Midar.ttf')
+    font = TTFont(ROOT / 'assets' / 'fonts' / 'born2bsporty-fs.otf')
     for dark in [False, True]:
         destination = ROOT / 'assets' / ('intro-dark.svg' if dark else 'intro.svg')
         destination.write_text(banner(font), encoding='utf-8', newline='\n')
