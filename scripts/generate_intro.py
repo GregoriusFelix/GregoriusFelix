@@ -7,7 +7,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
 ROOT = Path(__file__).resolve().parents[1]
-PHRASES = ["Hello, my name is Felix", "Software Engineering Student", "I build web & mobile apps."]
+PHRASES = ["Hello, my name is Felix!", "Software Engineering Student", "I build Web & Mobile Apps."]
 
 
 def headline(font, phrase, font_size=64, letter_spacing=0):
@@ -28,7 +28,7 @@ def headline(font, phrase, font_size=64, letter_spacing=0):
 
 
 def banner(font, support_font):
-    bg, fg, muted, accent = "#020617", "#ffffff", "#dbeafe", "#bfdbfe"
+    bg, fg, muted, accent = "#020617", "#ffffff", "#ffffff", "#ffffff"
     background = base64.b64encode((ROOT / 'assets' / 'intro-background.jpg').read_bytes()).decode('ascii')
     text = []
     for i, phrase in enumerate(PHRASES):
