@@ -3,7 +3,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/intro-dark.svg" />
   <source media="(prefers-color-scheme: light)" srcset="assets/intro.svg" />
-  <img src="assets/intro.svg" alt="Hello, my name is Felix. Gregorius Felix Caton Erawan, Software Engineering student building web and mobile applications." width="100%" />
+  <img src="assets/intro.svg" alt="Hello, my name is Felix! Gregorius Felix Caton Erawan, Software Engineering student building web and mobile applications." width="100%" />
 </picture>
 
 <a href="#internship-opportunities"><img src="https://img.shields.io/badge/INTERNSHIP-AVAILABLE%20FEB%202027%20ONWARD-0F766E?style=for-the-badge&amp;labelColor=182F36" alt="Available for a full-time internship from February 2027 onward" /></a>

@@ -49,7 +49,7 @@ def banner(font, support_font):
     name_outline, name_width, name_scale, _ = headline(support_font, 'GREGORIUS FELIX CATON ERAWAN', font_size=22, letter_spacing=2)
     subtitle_outline, subtitle_width, subtitle_scale, _ = headline(support_font, 'Software Engineering \u00b7 Web & Mobile Development', font_size=24)
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title description">
-<title id="title">Hello, my name is Felix. Software Engineering Student.</title>
+<title id="title">Hello, my name is Felix! Software Engineering Student.</title>
 <desc id="description">An animated typing introduction for Gregorius Felix Caton Erawan, over a blue and black grid background.</desc>
 <style>.static-text{{display:none}}@media(prefers-reduced-motion:reduce){{.typing-line{{display:none}}.static-text{{display:block}}}}</style>
 <rect width="1200" height="400" fill="{bg}"/>
