@@ -7,7 +7,7 @@ from fontTools.pens.svgPathPen import SVGPathPen
 from fontTools.pens.transformPen import TransformPen
 
 ROOT = Path(__file__).resolve().parents[1]
-PHRASES = ["Hi, I'm Felix.", "Software Engineering Student", "I build web & mobile apps."]
+PHRASES = ["Hello, my name is Felix", "Software Engineering Student", "I build web & mobile apps."]
 
 
 def headline(font, phrase):
@@ -45,7 +45,7 @@ def banner(font):
 <rect x="{left + 7}" y="155" width="3" height="72" fill="{accent}"><animate attributeName="x" values="{cursor_values}" keyTimes="{keys}" calcMode="discrete" {timing}/><animate attributeName="opacity" values="1;1;0;0" keyTimes="0;.48;.5;1" dur=".9s" repeatCount="indefinite"/></rect></g>""")
     static_outline, static_width, static_scale, _ = headline(font, PHRASES[0])
     return f"""<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="400" viewBox="0 0 1200 400" role="img" aria-labelledby="title description">
-<title id="title">Hi, I'm Felix. Software Engineering Student.</title>
+<title id="title">Hello, my name is Felix. Software Engineering Student.</title>
 <desc id="description">An animated typing introduction for Gregorius Felix Caton Erawan, over a blue and black grid background.</desc>
 <style>.static-text{{display:none}}@media(prefers-reduced-motion:reduce){{.typing-line{{display:none}}.static-text{{display:block}}}}</style>
 <rect width="1200" height="400" fill="{bg}"/>
