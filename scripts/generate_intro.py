@@ -82,9 +82,13 @@ def greeting(font, color, accent):
     original, original_width, original_scale, original_positions = headline(font, name, size)
     prefix_done = .2 + 1.6 * split / len(phrase)
     finish = GREETING_SECONDS - .2
-    prefix_frames = [(0, 0)] + letters(prefix_positions, .2, prefix_done) + [(finish, 0)]
+    erase_start = finish - .8
+    name_erased = erase_start + .8 * len(name) / len(phrase)
+    prefix_erase = letters(prefix_positions, name_erased, finish, erase=True)
+    name_erase = letters(original_positions, erase_start, name_erased, erase=True)
+    prefix_frames = [(0, 0)] + letters(prefix_positions, .2, prefix_done) + prefix_erase
     original_frames = ([(0, 0)] + letters(original_positions, prefix_done, 1.8)
-                       + [(3.8, 0), (12.6, original_width), (finish, 0)])
+                       + [(3.8, 0), (12.6, original_width)] + name_erase)
     cursor_frames = ([(0, left + 7)]
                      + [(t, left + x + 7) for t, x in letters(prefix_positions, .2, prefix_done)]
                      + [(t, name_left + x + 7) for t, x in letters(original_positions, prefix_done, 1.8)])
@@ -115,6 +119,8 @@ def greeting(font, color, accent):
         select_name(trial_width, end)
         outlines.append(clipped_outline(f'name-{identifier}', outline, name_left, trial_scale, frames, color))
     cursor_frames.append((12.6, name_left + original_width + 7))
+    cursor_frames += [(t, name_left + x + 7) for t, x in name_erase]
+    cursor_frames += [(t, left + x + 7) for t, x in prefix_erase]
     cursor_visibility.append((finish, 0))
     return ('<g class="typing-line" data-sequence="font-audition">'
             + ''.join(selections) + ''.join(outlines)
@@ -124,7 +130,8 @@ def greeting(font, color, accent):
 def typed_phrase(font, phrase, start, end, identifier, color, accent):
     outline, width, scale, positions = headline(font, phrase)
     left = (1200 - width) / 2
-    frames = [(0, 0)] + letters(positions, start + .2, start + 1.8) + [(end - .2, 0)]
+    frames = ([(0, 0)] + letters(positions, start + .2, start + 1.8)
+              + letters(positions, end - 1, end - .2, erase=True))
     return ('<g class="typing-line">'
             + clipped_outline(identifier, outline, left, scale, frames, color)
             + cursor([(t, left + x + 7) for t, x in frames], accent,
