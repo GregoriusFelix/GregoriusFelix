@@ -79,47 +79,43 @@ def greeting(font, color, accent):
     name_left = left + positions[split]
     size = scale * font['head'].unitsPerEm
     prefix_outline, _, prefix_scale, prefix_positions = headline(font, prefix, size)
-    original, _, original_scale, original_positions = headline(font, name, size)
+    original, original_width, original_scale, original_positions = headline(font, name, size)
     prefix_done = .2 + 1.6 * split / len(phrase)
-    prefix_frames = ([(0, 0)] + letters(prefix_positions, .2, prefix_done)
-                     + letters(prefix_positions, 15.4, 15.8, erase=True))
+    finish = GREETING_SECONDS - .2
+    prefix_frames = [(0, 0)] + letters(prefix_positions, .2, prefix_done) + [(finish, 0)]
     original_frames = ([(0, 0)] + letters(original_positions, prefix_done, 1.8)
-                       + letters(original_positions, 2.9, 3.5, erase=True)
-                       + letters(original_positions, 12.6, 13.3)
-                       + letters(original_positions, 15.2, 15.4, erase=True))
+                       + [(3.8, 0), (12.6, original_width), (finish, 0)])
     cursor_frames = ([(0, left + 7)]
                      + [(t, left + x + 7) for t, x in letters(prefix_positions, .2, prefix_done)]
-                     + [(t, name_left + x + 7) for t, x in original_frames if 0 < t < 3.8])
-    cursor_visibility = [(0, 1), (15.8, 0)]
+                     + [(t, name_left + x + 7) for t, x in letters(original_positions, prefix_done, 1.8)])
+    cursor_visibility = [(0, 1)]
     outlines = [clipped_outline('greeting-prefix', prefix_outline, left, prefix_scale, prefix_frames, color),
                 clipped_outline('name-born2bsporty', original, name_left, original_scale, original_frames, color)]
     selections = []
-    # A selected name is replaced immediately; other changes backspace and retype.
+
+    def select_name(selected_width, switch_time):
+        selections.append(f'<rect x="{name_left - 5}" y="151" width="{selected_width + 10}" '
+                          'height="80" fill="#60a5fa" opacity="0">'
+                          f'{animate("opacity", [(0, 0), (switch_time - .5, .4), (switch_time, 0)])}</rect>')
+        cursor_visibility.extend([(switch_time - .5, 0), (switch_time, 1)])
+
+    select_name(original_width, 3.8)
+    # Each selected name changes font in place; its letters never disappear individually.
     trials = [
-        ('dico', 'Dico.ttf', 3.8, 5.8, True),
-        ('minecraft', 'Minecraft.ttf', 5.8, 7.9, False),
-        ('ari-w9500', 'ari-w9500-condensed-display.ttf', 8.2, 10.2, True),
-        ('determination', 'determination.ttf', 10.2, 12.3, False),
+        ('dico', 'Dico.ttf', 3.8, 6.0),
+        ('minecraft', 'Minecraft.ttf', 6.0, 8.2),
+        ('ari-w9500', 'ari-w9500-condensed-display.ttf', 8.2, 10.4),
+        ('determination', 'determination.ttf', 10.4, 12.6),
     ]
-    previous_selected = False
-    for identifier, filename, start, end, selected in trials:
+    for identifier, filename, start, end in trials:
         trial_font = TTFont(ROOT / 'assets' / 'fonts' / filename)
-        outline, trial_width, trial_scale, trial_positions = headline(trial_font, name, size)
-        frames = ([(0, 0), (start, trial_width)] if previous_selected else
-                  [(0, 0)] + letters(trial_positions, start, start + .7))
-        if selected:
-            frames += [(end, 0)]
-            selections.append(f'<rect x="{name_left - 5}" y="151" width="{trial_width + 10}" '
-                              'height="80" fill="#60a5fa" opacity="0">'
-                              f'{animate("opacity", [(0, 0), (end - .5, .4), (end, 0)])}</rect>')
-            cursor_visibility += [(end - .5, 0), (end, 1)]
-        else:
-            frames += letters(trial_positions, end - .6, end, erase=True)
-        cursor_frames += [(t, name_left + x + 7) for t, x in frames if t > 0]
+        outline, trial_width, trial_scale, _ = headline(trial_font, name, size)
+        frames = [(0, 0), (start, trial_width), (end, 0)]
+        cursor_frames.append((start, name_left + trial_width + 7))
+        select_name(trial_width, end)
         outlines.append(clipped_outline(f'name-{identifier}', outline, name_left, trial_scale, frames, color))
-        previous_selected = selected
-    cursor_frames += [(t, name_left + x + 7) for t, x in original_frames if t >= 12.6]
-    cursor_frames += [(t, left + x + 7) for t, x in letters(prefix_positions, 15.4, 15.8, erase=True)]
+    cursor_frames.append((12.6, name_left + original_width + 7))
+    cursor_visibility.append((finish, 0))
     return ('<g class="typing-line" data-sequence="font-audition">'
             + ''.join(selections) + ''.join(outlines)
             + cursor(cursor_frames, accent, cursor_visibility) + '</g>')
@@ -128,8 +124,7 @@ def greeting(font, color, accent):
 def typed_phrase(font, phrase, start, end, identifier, color, accent):
     outline, width, scale, positions = headline(font, phrase)
     left = (1200 - width) / 2
-    frames = ([(0, 0)] + letters(positions, start + .2, start + 1.8)
-              + letters(positions, end - .8, end - .2, erase=True))
+    frames = [(0, 0)] + letters(positions, start + .2, start + 1.8) + [(end - .2, 0)]
     return ('<g class="typing-line">'
             + clipped_outline(identifier, outline, left, scale, frames, color)
             + cursor([(t, left + x + 7) for t, x in frames], accent,
