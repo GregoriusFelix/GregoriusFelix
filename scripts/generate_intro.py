@@ -1,6 +1,8 @@
 """Regenerate the intro banners. Install dependencies from scripts/requirements.txt first."""
 from pathlib import Path
 import base64
+import hashlib
+import re
 
 from fontTools.ttLib import TTFont
 from fontTools.pens.svgPathPen import SVGPathPen
@@ -27,7 +29,8 @@ def headline(font, phrase, font_size=64, letter_spacing=0):
     return pen.getCommands(), advance * scale, scale, [x * scale for x in positions]
 
 
-CYCLE_SECONDS = 24
+GREETING_SECONDS = 16
+CYCLE_SECONDS = GREETING_SECONDS + 6 * (len(PHRASES) - 1)
 
 
 def animate(attribute, frames):
@@ -65,54 +68,61 @@ def cursor(frames, accent, visible):
             '</rect></g>')
 
 
-def greeting(font, support_font, color, accent):
+def greeting(font, color, accent):
     phrase = PHRASES[0]
-    # Keep ordinary typing available if the greeting is later changed to omit Felix.
     if 'Felix' not in phrase:
-        return typed_phrase(font, phrase, 0, 12, 'greeting', color, accent)
+        return typed_phrase(font, phrase, 0, GREETING_SECONDS, 'greeting', color, accent)
     split = phrase.index('Felix')
     prefix, name = phrase[:split], phrase[split:]
     _, width, scale, positions = headline(font, phrase)
     left = (1200 - width) / 2
-    prefix_outline, _, _, prefix_positions = headline(font, prefix)
-    prefix_width = positions[split]
-    name_left = left + prefix_width
-    # Preserve the original greeting's scale and origin while only the name changes.
+    name_left = left + positions[split]
     size = scale * font['head'].unitsPerEm
     prefix_outline, _, prefix_scale, prefix_positions = headline(font, prefix, size)
-    original, original_width, original_scale, original_positions = headline(font, name, size)
-    midar_font = TTFont(ROOT / 'assets' / 'fonts' / 'Midar.ttf')
-    midar, midar_width, midar_scale, midar_positions = headline(midar_font, name, size)
-    impact, impact_width, impact_scale, impact_positions = headline(support_font, name, size)
+    original, _, original_scale, original_positions = headline(font, name, size)
     prefix_done = .2 + 1.6 * split / len(phrase)
     prefix_frames = ([(0, 0)] + letters(prefix_positions, .2, prefix_done)
-                     + letters(prefix_positions, 11.35, 11.8, erase=True))
+                     + letters(prefix_positions, 15.4, 15.8, erase=True))
     original_frames = ([(0, 0)] + letters(original_positions, prefix_done, 1.8)
                        + letters(original_positions, 2.9, 3.5, erase=True)
-                       + letters(original_positions, 8.45, 9.2)
-                       + letters(original_positions, 11.2, 11.35, erase=True))
-    midar_frames = [(0, 0)] + letters(midar_positions, 3.8, 4.55) + [(6.1, 0)]
-    impact_frames = ([(0, 0), (6.1, impact_width)]
-                     + letters(impact_positions, 7.6, 8.2, erase=True))
+                       + letters(original_positions, 12.6, 13.3)
+                       + letters(original_positions, 15.2, 15.4, erase=True))
     cursor_frames = ([(0, left + 7)]
                      + [(t, left + x + 7) for t, x in letters(prefix_positions, .2, prefix_done)]
-                     + [(t, name_left + x + 7) for t, x in original_frames if t > 0 and t < 3.8]
-                     + [(t, name_left + x + 7) for t, x in midar_frames if 3.8 <= t < 6.1]
-                     + [(6.1, name_left + impact_width + 7)]
-                     + [(t, name_left + x + 7) for t, x in letters(impact_positions, 7.6, 8.2, erase=True)]
-                     + [(t, name_left + x + 7) for t, x in original_frames if t >= 8.45]
-                     + [(t, left + x + 7) for t, x in letters(prefix_positions, 11.35, 11.8, erase=True)])
-    selection = (f'<rect x="{name_left - 5}" y="151" width="{midar_width + 10}" '
-                 'height="80" fill="#60a5fa" opacity="0">'
-                 f'{animate("opacity", [(0, 0), (5.6, .4), (6.1, 0)])}</rect>')
+                     + [(t, name_left + x + 7) for t, x in original_frames if 0 < t < 3.8])
+    cursor_visibility = [(0, 1), (15.8, 0)]
+    outlines = [clipped_outline('greeting-prefix', prefix_outline, left, prefix_scale, prefix_frames, color),
+                clipped_outline('name-born2bsporty', original, name_left, original_scale, original_frames, color)]
+    selections = []
+    # A selected name is replaced immediately; other changes backspace and retype.
+    trials = [
+        ('dico', 'Dico.ttf', 3.8, 5.8, True),
+        ('minecraft', 'Minecraft.ttf', 5.8, 7.9, False),
+        ('ari-w9500', 'ari-w9500-condensed-display.ttf', 8.2, 10.2, True),
+        ('determination', 'determination.ttf', 10.2, 12.3, False),
+    ]
+    previous_selected = False
+    for identifier, filename, start, end, selected in trials:
+        trial_font = TTFont(ROOT / 'assets' / 'fonts' / filename)
+        outline, trial_width, trial_scale, trial_positions = headline(trial_font, name, size)
+        frames = ([(0, 0), (start, trial_width)] if previous_selected else
+                  [(0, 0)] + letters(trial_positions, start, start + .7))
+        if selected:
+            frames += [(end, 0)]
+            selections.append(f'<rect x="{name_left - 5}" y="151" width="{trial_width + 10}" '
+                              'height="80" fill="#60a5fa" opacity="0">'
+                              f'{animate("opacity", [(0, 0), (end - .5, .4), (end, 0)])}</rect>')
+            cursor_visibility += [(end - .5, 0), (end, 1)]
+        else:
+            frames += letters(trial_positions, end - .6, end, erase=True)
+        cursor_frames += [(t, name_left + x + 7) for t, x in frames if t > 0]
+        outlines.append(clipped_outline(f'name-{identifier}', outline, name_left, trial_scale, frames, color))
+        previous_selected = selected
+    cursor_frames += [(t, name_left + x + 7) for t, x in original_frames if t >= 12.6]
+    cursor_frames += [(t, left + x + 7) for t, x in letters(prefix_positions, 15.4, 15.8, erase=True)]
     return ('<g class="typing-line" data-sequence="font-audition">'
-            + clipped_outline('greeting-prefix', prefix_outline, left, prefix_scale, prefix_frames, color)
-            + selection
-            + clipped_outline('name-born2bsporty', original, name_left, original_scale, original_frames, color)
-            + clipped_outline('name-midar', midar, name_left, midar_scale, midar_frames, color)
-            + clipped_outline('name-impact', impact, name_left, impact_scale, impact_frames, color)
-            + cursor(cursor_frames, accent, [(0, 1), (5.6, 0), (6.1, 1), (11.8, 0)])
-            + '</g>')
+            + ''.join(selections) + ''.join(outlines)
+            + cursor(cursor_frames, accent, cursor_visibility) + '</g>')
 
 
 def typed_phrase(font, phrase, start, end, identifier, color, accent):
@@ -130,9 +140,9 @@ def typed_phrase(font, phrase, start, end, identifier, color, accent):
 def banner(font, support_font):
     bg, fg, muted, accent = "#020617", "#ffffff", "#ffffff", "#ffffff"
     background = base64.b64encode((ROOT / 'assets' / 'intro-background.jpg').read_bytes()).decode('ascii')
-    text = [greeting(font, support_font, fg, accent)]
+    text = [greeting(font, fg, accent)]
     for i, phrase in enumerate(PHRASES[1:]):
-        start = 12 + i * 6
+        start = GREETING_SECONDS + i * 6
         text.append(typed_phrase(font, phrase, start, start + 6, f'phrase-{i}', fg, accent))
     static_outline, static_width, static_scale, _ = headline(font, PHRASES[0])
     name_outline, name_width, name_scale, _ = headline(support_font, 'GREGORIUS FELIX CATON ERAWAN', font_size=22, letter_spacing=2)
@@ -159,3 +169,12 @@ if __name__ == '__main__':
         destination = ROOT / 'assets' / ('intro-dark.svg' if dark else 'intro.svg')
         destination.write_text(banner(font, support_font), encoding='utf-8', newline='\n')
         print(f'Generated {destination.relative_to(ROOT)}')
+    readme = ROOT / 'README.md'
+    contents = readme.read_text(encoding='utf-8')
+    for filename in ['intro.svg', 'intro-dark.svg']:
+        asset = ROOT / 'assets' / filename
+        version = hashlib.sha256(asset.read_bytes()).hexdigest()[:12]
+        pattern = r'(assets/' + re.escape(filename) + r')(?:\?v=[A-Za-z0-9_-]+)?(?=")'
+        contents = re.sub(pattern, lambda match: f'{match[1]}?v={version}', contents)
+    readme.write_text(contents, encoding='utf-8', newline='\n')
+    print('Updated README image versions to refresh cached banners.')
