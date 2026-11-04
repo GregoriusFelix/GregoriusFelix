@@ -29,7 +29,9 @@ def headline(font, phrase, font_size=64, letter_spacing=0):
     return pen.getCommands(), advance * scale, scale, [x * scale for x in positions]
 
 
-GREETING_SECONDS = 16
+GREETING_SECONDS = 9
+FONT_VARIANT_SECONDS = .8
+FONT_SELECTION_SECONDS = .2
 CYCLE_SECONDS = GREETING_SECONDS + 6 * (len(PHRASES) - 1)
 
 
@@ -74,6 +76,14 @@ def greeting(font, color, accent):
         return typed_phrase(font, phrase, 0, GREETING_SECONDS, 'greeting', color, accent)
     split = phrase.index('Felix')
     prefix, name = phrase[:split], phrase[split:]
+    switch_start = 3.0
+    variant_fonts = [
+        ('dico', 'Dico.ttf'),
+        ('minecraft', 'Minecraft.ttf'),
+        ('ari-w9500', 'ari-w9500-condensed-display.ttf'),
+        ('determination', 'determination.ttf'),
+    ]
+    switch_end = round(switch_start + len(variant_fonts) * FONT_VARIANT_SECONDS, 3)
     _, width, scale, positions = headline(font, phrase)
     left = (1200 - width) / 2
     name_left = left + positions[split]
@@ -88,7 +98,7 @@ def greeting(font, color, accent):
     name_erase = letters(original_positions, erase_start, name_erased, erase=True)
     prefix_frames = [(0, 0)] + letters(prefix_positions, .2, prefix_done) + prefix_erase
     original_frames = ([(0, 0)] + letters(original_positions, prefix_done, 1.8)
-                       + [(3.8, 0), (12.6, original_width)] + name_erase)
+                       + [(switch_start, 0), (switch_end, original_width)] + name_erase)
     cursor_frames = ([(0, left + 7)]
                      + [(t, left + x + 7) for t, x in letters(prefix_positions, .2, prefix_done)]
                      + [(t, name_left + x + 7) for t, x in letters(original_positions, prefix_done, 1.8)])
@@ -100,25 +110,21 @@ def greeting(font, color, accent):
     def select_name(selected_width, switch_time):
         selections.append(f'<rect x="{name_left - 5}" y="151" width="{selected_width + 10}" '
                           'height="80" fill="#60a5fa" opacity="0">'
-                          f'{animate("opacity", [(0, 0), (switch_time - .5, .4), (switch_time, 0)])}</rect>')
-        cursor_visibility.extend([(switch_time - .5, 0), (switch_time, 1)])
+                          f'{animate("opacity", [(0, 0), (switch_time - FONT_SELECTION_SECONDS, .4), (switch_time, 0)])}</rect>')
+        cursor_visibility.extend([(switch_time - FONT_SELECTION_SECONDS, 0), (switch_time, 1)])
 
-    select_name(original_width, 3.8)
+    select_name(original_width, switch_start)
     # Each selected name changes font in place; its letters never disappear individually.
-    trials = [
-        ('dico', 'Dico.ttf', 3.8, 6.0),
-        ('minecraft', 'Minecraft.ttf', 6.0, 8.2),
-        ('ari-w9500', 'ari-w9500-condensed-display.ttf', 8.2, 10.4),
-        ('determination', 'determination.ttf', 10.4, 12.6),
-    ]
-    for identifier, filename, start, end in trials:
+    for index, (identifier, filename) in enumerate(variant_fonts):
+        start = round(switch_start + index * FONT_VARIANT_SECONDS, 3)
+        end = round(start + FONT_VARIANT_SECONDS, 3)
         trial_font = TTFont(ROOT / 'assets' / 'fonts' / filename)
         outline, trial_width, trial_scale, _ = headline(trial_font, name, size)
         frames = [(0, 0), (start, trial_width), (end, 0)]
         cursor_frames.append((start, name_left + trial_width + 7))
         select_name(trial_width, end)
         outlines.append(clipped_outline(f'name-{identifier}', outline, name_left, trial_scale, frames, color))
-    cursor_frames.append((12.6, name_left + original_width + 7))
+    cursor_frames.append((switch_end, name_left + original_width + 7))
     cursor_frames += [(t, name_left + x + 7) for t, x in name_erase]
     cursor_frames += [(t, left + x + 7) for t, x in prefix_erase]
     cursor_visibility.append((finish, 0))
