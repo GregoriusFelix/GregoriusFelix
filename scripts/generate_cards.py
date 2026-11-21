@@ -155,7 +155,7 @@ def emit_hero(fonts, days):
     svg = svg_start("Gregorius Felix Caton Erawan", "Software Engineering student building web and mobile applications.", width, height, fonts, 0)
     svg += paper(width, height)
     svg += '<path d="M822 0h378v570H988l-229-271z" fill="#1748D5"/><path d="M985 0h215v570h-120L850 272z" fill="url(#halftone)"/>'
-    svg += f'<g class="enter"><text x="58" y="68" fill="{INK}" font-family="FelixLabel,Impact,sans-serif" font-size="16" letter-spacing="2">SOFTWARE ENGINEERING  /  XMUM</text><text x="58" y="94" fill="{MUTED}" font-family="Arial,sans-serif" font-size="14">MALAYSIA · CLASS OF 2027</text></g>'
+    svg += f'<g class="enter"><text x="58" y="68" fill="{INK}" font-family="FelixLabel,Impact,sans-serif" font-size="16" letter-spacing="2">SOFTWARE ENGINEERING</text></g>'
     svg += f'<g class="headline" fill="{INK}" font-family="DicoEditorial,Georgia,serif"><text x="48" y="219" font-size="77">Gregorius</text><text x="35" y="329" fill="{BLUE}" font-size="130">Felix</text><text x="55" y="387" font-size="50">Caton Erawan</text></g>'
     svg += f'<path d="M66 416h320" stroke="{INK}" stroke-width="1.5"/><text x="65" y="461" fill="{INK}" font-family="Arial,sans-serif" font-size="14">Software Engineering student building web and mobile applications.</text>'
     # The contribution field acts as a data-led print plate in the collage.
@@ -168,7 +168,7 @@ def emit_hero(fonts, days):
     if portrait:
         svg += f'<g transform="rotate(7 1070 107)"><g class="enter"><rect x="966" y="34" width="208" height="146" fill="{PAPER}" stroke="{INK}" stroke-width="1.5"/><image href="{portrait}" x="975" y="43" width="190" height="128" preserveAspectRatio="xMidYMid slice"/></g></g>'
     # A smaller paper proof overlaps the activity panel, like a print laid over a contact sheet.
-    svg += f'<g transform="rotate(6 540 442)"><g class="enter"><rect x="414" y="385" width="308" height="132" fill="{PAPER}" stroke="{INK}" stroke-width="1.5"/><rect x="423" y="394" width="290" height="114" fill="url(#paper-grid)" opacity=".6"/><text x="442" y="427" fill="{BLUE}" font-family="FelixLabel,Impact,sans-serif" font-size="13" letter-spacing="2">IN PROGRESS</text><text x="440" y="466" fill="{INK}" font-family="DicoEditorial,Georgia,serif" font-size="27">XMUM Navigate</text><text x="442" y="491" fill="{MUTED}" font-family="Arial,sans-serif" font-size="12">Campus companion · web and mobile</text></g></g>'
+    svg += f'<g transform="rotate(6 540 442)"><g class="enter"><rect x="414" y="385" width="308" height="132" fill="{PAPER}" stroke="{INK}" stroke-width="1.5"/><rect x="423" y="394" width="290" height="114" fill="url(#paper-grid)" opacity=".6"/><text x="440" y="466" fill="{INK}" font-family="DicoEditorial,Georgia,serif" font-size="27">XMUM Navigate</text><text x="442" y="491" fill="{MUTED}" font-family="Arial,sans-serif" font-size="12">Campus companion · web and mobile</text></g></g>'
     # Thin registration marks and the folio number carry the poster's print language.
     svg += f'<path d="M387 117c26-16 37-41 40-74 3 33 16 58 43 74-27 13-40 35-43 67-4-32-16-54-40-67zM1113 459c16-11 24-26 26-47 2 21 10 36 27 47-17 9-25 22-27 43-2-21-10-34-26-43z" fill="none" stroke="{BLUE}" stroke-width="1.4"/><text x="1122" y="536" fill="{WHITE}" font-family="FelixLabel,Impact,sans-serif" font-size="64">06</text>'
     save("hero.svg", svg)
